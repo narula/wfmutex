@@ -8,13 +8,14 @@ import (
 func TestWFMutex(t *testing.T) {
 	rw := new(WFMutex)
 	var tid uint64 = 42
-	if !rw.Lock() {
+	ok, _ := rw.Lock()
+	if !ok {
 		t.Errorf("Could not lock\n")
 	}
 	if rw.Read()&LOCKED == 0 {
 		t.Errorf("Should be locked\n")
 	}
-	rw.Unlock(tid)
+	ok = rw.Unlock(tid)
 	if rw.Read()&LOCKED != 0 {
 		t.Errorf("Should be unlocked\n")
 	}
@@ -32,10 +33,11 @@ func TestWFMutex(t *testing.T) {
 				case <-done:
 					return
 				default:
-					if rw.Lock() {
+					ok, _ := rw.Lock()
+					if ok {
 						locked[id]++
 						x := rw.Read()
-						if x != LOCKED {
+						if x&LOCKED == 0 {
 							t.Errorf("I locked it! %x %x %x\n", id, x, rw.w)
 						}
 						rw.Unlock(tid)
