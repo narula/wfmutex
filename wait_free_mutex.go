@@ -21,7 +21,7 @@ func (rw *WFMutex) Lock() (bool, uint64) {
 	locked_q := atomic.LoadUint64(&rw.w)
 	high_bit := locked_q >> 63
 	if high_bit&1 != 0 {
-		return false, 0
+		return false, locked_q
 	}
 	// Not locked, try to compare and swap to get it.  We
 	// compare-and-swap in the last value to preserve the version in
@@ -32,7 +32,7 @@ func (rw *WFMutex) Lock() (bool, uint64) {
 	var locked_t uint64 = LOCKED | locked_q
 	done := atomic.CompareAndSwapUint64(&rw.w, locked_q, locked_t)
 	if !done {
-		return false, 0
+		return false, locked_q
 	}
 	return true, locked_q
 }
